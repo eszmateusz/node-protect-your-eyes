@@ -3,12 +3,71 @@ import { render } from 'react-dom';
 
 class App extends React.Component {
   state = {
-    status: 'off', // 'off','work', 'rest'
+    status: 'off', // 'off', 'work', 'rest'
     time: 0,
     timer: null,
   }
 
   render() {
+
+    const formatTime = time => {
+      const minutes = Math.floor(time / 60);
+      const seconds = time - (minutes * 60);
+
+      const formatedMinutes = minutes <=9 ? '0' + minutes : minutes
+      const formatedSeconds = seconds <=9 ? '0' + seconds : seconds
+
+      return formatedMinutes + ':' + formatedSeconds;
+    };
+
+    const step = () => {
+      this.setState({
+        time: this.state.time - 1,
+      })
+      if (this.state.time === 0){
+        if (this.state.status === "work"){
+          this.setState({
+            status: 'rest',
+            time: 20,
+            play: playBell(),
+          }) 
+        } else if (this.state.status === 'rest'){
+          this.setState({
+            status: 'work',
+            time: 1200,
+            play: playBell(),
+          }) 
+        }
+      }
+    };
+
+    const startTimer = () => {
+      this.setState({
+        status: 'work',
+        timer: setInterval(()=>{step()}, 1000),
+        time: 1200,
+      });      
+    };
+
+    const stopTimer = () => {
+      this.setState({
+        status: 'off',
+        timer: null,
+        time: 0,
+        play: playBell(),
+      });
+      clearInterval(this.state.timer);
+    }
+
+    const close = () => {
+      window.close();
+    }
+
+    const playBell = () => {
+      const bell = new Audio('./sounds/bell.wav');
+      bell.play();
+    };
+
     return (
       <div>
         <h1>Protect your eyes</h1>
@@ -26,16 +85,23 @@ class App extends React.Component {
         ) : ''}
         {this.state.status !== 'off' ? (
           <div className="timer">
-            18:23
+            {formatTime(this.state.time)}
           </div>
         ) : ''}
         {this.state.status === 'off' ? (
-          <button className="btn">Start</button>
+          <button className="btn" onClick={()=>{
+            startTimer();
+          }}>Start
+          </button>
         ) : ''}
         {this.state.status !== 'off' ? (
-          <button className="btn">Stop</button>
+          <button className="btn" onClick={()=>{
+            stopTimer();
+          }}>Stop</button>
         ) : ''}
-        <button className="btn btn-close">X</button>
+        <button className="btn btn-close" onClick={()=>{
+          close();
+        }}>X</button>
       </div>
     )
   }
